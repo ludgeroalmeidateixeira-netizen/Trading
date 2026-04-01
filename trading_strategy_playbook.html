@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Playbook — Ludgero Teixeira</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04060f;
+    --bg2: #070b18;
+    --surface: rgba(10,18,40,0.7);
+    --border: rgba(0,210,180,0.13);
+    --glow: #00d4b4;
+    --glow2: #0090ff;
+    --glow3: #7c3aed;
+    --accent: #00d4b4;
+    --accent2: #0090ff;
+    --gold: #f0c040;
+    --red: #ff4466;
+    --text: #e2eaf8;
+    --muted: #6a7fa8;
+    --mono: 'Space Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'DM Sans', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    overflow-x: hidden;
+    cursor: default;
+  }
+
+  /* ---- NOISE OVERLAY ---- */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  /* ---- GRID BACKGROUND ---- */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,210,180,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,210,180,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ---- AMBIENT GLOWS ---- */
+  .ambient {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.18;
+  }
+  .ambient-1 { width: 600px; height: 600px; background: var(--glow); top: -200px; left: -150px; animation: drift1 20s ease-in-out infinite; }
+  .ambient-2 { width: 500px; height: 500px; background: var(--glow2); bottom: 10%; right: -100px; animation: drift2 25s ease-in-out infinite; }
+  .ambient-3 { width: 300px; height: 300px; background: var(--glow3); top: 50%; left: 40%; animation: drift3 18s ease-in-out infinite; }
+
+  @keyframes drift1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(60px,40px)} }
+  @keyframes drift2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-50px,30px)} }
+  @keyframes drift3 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(30px,-40px)} }
+
+  /* ---- SCROLL PROGRESS ---- */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--glow), var(--glow2));
+    width: 0%;
+    z-index: 10000;
+    box-shadow: 0 0 10px var(--glow);
+    transition: width 0.1s linear;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 18px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(4,6,15,0.85);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--accent); }
+
+  .nav-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--glow);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--glow);
+    box-shadow: 0 0 8px var(--glow);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,100%{opacity:1; transform:scale(1)}
+    50%{opacity:0.5; transform:scale(0.8)}
+  }
+
+  /* ---- MAIN WRAPPER ---- */
+  main { position: relative; z-index: 1; }
+
+  /* ---- HERO ---- */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 48px;
+    padding-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: var(--display);
+    font-size: clamp(54px, 8vw, 110px);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.5s forwards;
+  }
+
+  .hero-title .line-accent { 
+    color: transparent;
+    -webkit-text-stroke: 1px var(--accent);
+    display: block;
+  }
+
+  .hero-title .glow-text {
+    color: var(--accent);
+    text-shadow: 0 0 40px rgba(0,212,180,0.4), 0 0 80px rgba(0,212,180,0.15);
+  }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    font-weight: 300;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.7s forwards;
+  }
+
+  .hero-metrics {
+    display: flex;
+    gap: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.9s forwards;
+  }
+
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .metric-val {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 20px rgba(0,212,180,0.4);
+  }
+
+  .metric-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .hero-chart {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 520px;
+    opacity: 0;
+    animation: fadeIn 1.2s 1.2s forwards;
+  }
+
+  .chart-line {
+    fill: none;
+    stroke: var(--glow);
+    stroke-width: 2.5;
+    filter: drop-shadow(0 0 6px var(--glow));
+  }
+
+  .chart-fill {
+    fill: url(#chartGrad);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 0.6; }
+  }
+
+  /* ---- QUOTE BAND ---- */
+  .quote-band {
+    background: rgba(0,212,180,0.04);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 32px 48px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    overflow: hidden;
+  }
+
+  .quote-band-icon {
+    font-size: 36px;
+    color: var(--accent);
+    opacity: 0.4;
+    flex-shrink: 0;
+    font-family: Georgia, serif;
+  }
+
+  .quote-band-text {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+  }
+
+  .quote-band-text em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* ---- SECTION ---- */
+  section {
+    padding: 100px 48px;
+    position: relative;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    display: block;
+    height: 1px;
+    width: 40px;
+    background: var(--accent);
+    opacity: 0.4;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    letter-spacing: -0.02em;
+  }
+
+  .section-desc {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 640px;
+    line-height: 1.75;
+    font-weight: 300;
+    margin-bottom: 64px;
+  }
+
+  /* ---- FRAMEWORK FLOW ---- */
+  .framework-flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    position: relative;
+    margin-bottom: 80px;
+  }
+
+  .flow-step {
+    flex: 1;
+    padding: 32px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .flow-step:hover {
+    background: rgba(0,212,180,0.06);
+    border-color: rgba(0,212,180,0.3);
+    transform: translateY(-4px);
+    z-index: 2;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 20px;
+    z-index: 3;
+    text-shadow: 0 0 10px var(--accent);
+  }
+
+  .flow-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+    opacity: 0.7;
+  }
+
+  .flow-title {
+    font-family: var(--display);
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .flow-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .flow-icon {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  /* ---- CONFLUENCE GRID ---- */
+  .confluence-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+
+  .conf-item {
+    background: var(--bg2);
+    padding: 28px 20px;
+    transition: all 0.25s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .conf-item::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--glow), var(--glow2));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .conf-item:hover::before { transform: scaleX(1); }
+
+  .conf-item:hover {
+    background: rgba(0,212,180,0.04);
+  }
+
+  .conf-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  .conf-title {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+    line-height: 1.3;
+  }
+
+  .conf-desc {
+    font-size: 11.5px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ---- RISK SECTION ---- */
+  .risk-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .risk-pillar {
+    background: var(--bg2);
+    padding: 48px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .risk-pillar::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--glow), transparent);
+    opacity: 0.3;
+  }
+
+  .risk-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 24px;
+  }
+
+  .risk-icon-green { background: rgba(0,212,180,0.1); box-shadow: 0 0 20px rgba(0,212,180,0.1); }
+  .risk-icon-blue { background: rgba(0,144,255,0.1); box-shadow: 0 0 20px rgba(0,144,255,0.1); }
+  .risk-icon-gold { background: rgba(240,192,64,0.1); box-shadow: 0 0 20px rgba(240,192,64,0.1); }
+  .risk-icon-red { background: rgba(255,68,102,0.1); box-shadow: 0 0 20px rgba(255,68,102,0.1); }
+
+  .risk-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 12px;
+  }
+
+  .risk-body {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  .risk-quote {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(0,212,180,0.05);
+    border-left: 2px solid var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* ---- INVALIDATION LIST ---- */
+  .invalidation-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .inv-item {
+    background: var(--bg2);
+    padding: 24px 28px;
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    transition: background 0.25s;
+  }
+
+  .inv-item:hover { background: rgba(255,68,102,0.04); }
+
+  .inv-badge {
+    background: rgba(255,68,102,0.1);
+    border: 1px solid rgba(255,68,102,0.2);
+    color: var(--red);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+    letter-spacing: 0.1em;
+  }
+
+  .inv-content {}
+
+  .inv-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .inv-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ---- PHILOSOPHY ---- */
+  .philosophy-wall {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .phil-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 36px 28px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .phil-card:hover {
+    border-color: rgba(0,212,180,0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), 0 0 40px rgba(0,212,180,0.04);
+  }
+
+  .phil-glyph {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    margin-bottom: 20px;
+    display: block;
+  }
+
+  .phil-quote {
+    font-family: var(--display);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+  .phil-attr {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+  }
+
+  /* ---- EXECUTION CHECKLIST ---- */
+  .exec-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .exec-table th {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 12px 20px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .exec-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+
+  .exec-table tr:hover td { background: rgba(0,212,180,0.03); color: var(--text); }
+
+  .tag {
+    display: inline-block;
+    background: rgba(0,212,180,0.08);
+    border: 1px solid rgba(0,212,180,0.15);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 3px;
+    letter-spacing: 0.08em;
+    margin-right: 6px;
+    margin-bottom: 4px;
+  }
+
+  .tag-red {
+    background: rgba(255,68,102,0.08);
+    border-color: rgba(255,68,102,0.15);
+    color: var(--red);
+  }
+
+  .tag-gold {
+    background: rgba(240,192,64,0.08);
+    border-color: rgba(240,192,64,0.15);
+    color: var(--gold);
+  }
+
+  /* ---- FOOTER ---- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 48px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .footer-brand {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  .footer-brand span { color: var(--accent); }
+
+  .footer-right {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* ---- ANIMATIONS ---- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ---- DIVIDER ---- */
+  .section-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 48px;
+  }
+
+  /* ---- TICKER TAPE ---- */
+  .ticker {
+    overflow: hidden;
+    background: rgba(0,212,180,0.04);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 0;
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+  }
+
+  .ticker-item {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin: 0 32px;
+    letter-spacing: 0.1em;
+  }
+
+  .ticker-item .up { color: var(--glow); }
+  .ticker-item .down { color: var(--red); }
+
+  @keyframes ticker {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ---- GLOW CARD ---- */
+  .glow-card {
+    position: relative;
+  }
+
+  .glow-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(135deg, var(--glow), var(--glow2), var(--glow3));
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: -1;
+  }
+
+  .glow-card:hover::before { opacity: 0.2; }
+
+  /* ---- SCROLLBAR ---- */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,212,180,0.3); }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<div class="grid-bg"></div>
+<div class="ambient ambient-1"></div>
+<div class="ambient ambient-2"></div>
+<div class="ambient ambient-3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">LT / TRADING PLAYBOOK</div>
+  <ul class="nav-links">
+    <li><a href="#framework">Framework</a></li>
+    <li><a href="#confluence">Confluence</a></li>
+    <li><a href="#risk">Risk</a></li>
+    <li><a href="#invalidation">Invalidation</a></li>
+    <li><a href="#philosophy">Philosophy</a></li>
+  </ul>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    SYSTEM ACTIVE
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker" style="margin-top:62px">
+  <div class="ticker-inner">
+    <span class="ticker-item">EURUSD <span class="up">▲ 1.0847</span></span>
+    <span class="ticker-item">BTCUSD <span class="up">▲ 83,420</span></span>
+    <span class="ticker-item">XAUUSD <span class="up">▲ 3,108</span></span>
+    <span class="ticker-item">US30 <span class="down">▼ 41,890</span></span>
+    <span class="ticker-item">GBPUSD <span class="up">▲ 1.2934</span></span>
+    <span class="ticker-item">USDJPY <span class="down">▼ 148.72</span></span>
+    <span class="ticker-item">NAS100 <span class="up">▲ 18,210</span></span>
+    <span class="ticker-item">ETHUSD <span class="up">▲ 1,892</span></span>
+    <span class="ticker-item">USOIL <span class="down">▼ 69.44</span></span>
+    <span class="ticker-item">EURUSD <span class="up">▲ 1.0847</span></span>
+    <span class="ticker-item">BTCUSD <span class="up">▲ 83,420</span></span>
+    <span class="ticker-item">XAUUSD <span class="up">▲ 3,108</span></span>
+    <span class="ticker-item">US30 <span class="down">▼ 41,890</span></span>
+    <span class="ticker-item">GBPUSD <span class="up">▲ 1.2934</span></span>
+    <span class="ticker-item">USDJPY <span class="down">▼ 148.72</span></span>
+    <span class="ticker-item">NAS100 <span class="up">▲ 18,210</span></span>
+    <span class="ticker-item">ETHUSD <span class="up">▲ 1,892</span></span>
+    <span class="ticker-item">USOIL <span class="down">▼ 69.44</span></span>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">PROPRIETARY TRADING SYSTEM — MULTI-ASSET</div>
+  <h1 class="hero-title">
+    <span>THE</span>
+    <span class="glow-text">PLAYBOOK.</span>
+    <span class="line-accent">INSTITUTIONAL</span>
+  </h1>
+  <p class="hero-sub">A complete Smart Money framework built on multi-timeframe structure, liquidity engineering, and asymmetric risk. Deployed across Forex, Crypto, Indices and Commodities.</p>
+  <div class="hero-metrics">
+    <div class="metric">
+      <span class="metric-val">10+</span>
+      <span class="metric-label">CONFLUENCE CRITERIA</span>
+    </div>
+    <div class="metric">
+      <span class="metric-val">HTF</span>
+      <span class="metric-label">FIRST APPROACH</span>
+    </div>
+    <div class="metric">
+      <span class="metric-val">A+</span>
+      <span class="metric-label">SETUPS ONLY</span>
+    </div>
+    <div class="metric">
+      <span class="metric-val">7Y</span>
+      <span class="metric-label">LIVE EXECUTION</span>
+    </div>
+  </div>
+
+  <!-- SVG Chart decoration -->
+  <svg class="hero-chart" viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#00d4b4" stop-opacity="0.18"/>
+        <stop offset="100%" stop-color="#00d4b4" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path class="chart-fill" d="M0,240 L40,210 L80,220 L120,190 L160,200 L200,160 L220,170 L240,140 L280,100 L310,120 L340,80 L380,60 L420,40 L460,20 L520,30 L520,280 Z"/>
+    <path class="chart-line" d="M0,240 L40,210 L80,220 L120,190 L160,200 L200,160 L220,170 L240,140 L280,100 L310,120 L340,80 L380,60 L420,40 L460,20 L520,30"/>
+    <!-- Grid lines -->
+    <line x1="0" y1="70" x2="520" y2="70" stroke="rgba(0,212,180,0.08)" stroke-width="1"/>
+    <line x1="0" y1="140" x2="520" y2="140" stroke="rgba(0,212,180,0.08)" stroke-width="1"/>
+    <line x1="0" y1="210" x2="520" y2="210" stroke="rgba(0,212,180,0.08)" stroke-width="1"/>
+  </svg>
+</section>
+
+<!-- QUOTE BAND -->
+<div class="quote-band reveal">
+  <div class="quote-band-icon">"</div>
+  <div class="quote-band-text">
+    There's only one real hedge: learn to win <em>both ways</em>. If you can't short or trail into HTF supply and take profits, you'll get REKT when the music stops. — <em>Master</em>
+  </div>
+</div>
+
+<!-- FRAMEWORK SECTION -->
+<section id="framework">
+  <div class="section-label">CORE SYSTEM</div>
+  <h2 class="section-title reveal">The HTF-First<br>Framework</h2>
+  <p class="section-desc reveal">Every trade decision flows from a strict top-down analysis. High timeframes define the narrative. Lower timeframes provide the precision. Never the other way around.</p>
+
+  <div class="framework-flow reveal">
+    <div class="flow-step">
+      <div class="flow-num">STEP 01</div>
+      <div class="flow-icon">🗺️</div>
+      <div class="flow-title">HTF Range Definition</div>
+      <div class="flow-desc">Define range high and low on Weekly/Daily. Pull Fibonacci from swing high to swing low. Above 0.5 = Premium zone. Below 0.5 = Discount zone.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 02</div>
+      <div class="flow-icon">🏗️</div>
+      <div class="flow-title">Structure Narrative</div>
+      <div class="flow-desc">Identify Break of Structure (BOS) on HTF to confirm directional intent. No HTF story means no trade. Full stop.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 03</div>
+      <div class="flow-icon">🎯</div>
+      <div class="flow-title">POI Identification</div>
+      <div class="flow-desc">Mark Order Blocks, FVGs, Breaker Blocks and Supply/Demand zones on 4H to 20H timeframes. These are the reaction levels.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 04</div>
+      <div class="flow-icon">💧</div>
+      <div class="flow-title">Liquidity Hunt</div>
+      <div class="flow-desc">Confirm liquidity sweep or last liquidity of range. Smart money manipulation must be present. This is the fuel for the real move.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 05</div>
+      <div class="flow-icon">⚡</div>
+      <div class="flow-title">LTF Entry Trigger</div>
+      <div class="flow-desc">Drop to LTF for confirmation: displacement, micro BOS, or entry model trigger. Sniper entry with defined invalidation below/above structure.</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- CONFLUENCE SECTION -->
+<section id="confluence">
+  <div class="section-label">A+ SETUP CRITERIA</div>
+  <h2 class="section-title reveal">10-Point Confluence<br>Checklist</h2>
+  <p class="section-desc reveal">A valid entry requires the convergence of multiple independent factors. The more factors aligned, the higher the probability. Trade only A+ setups — everything else is noise.</p>
+
+  <div class="confluence-grid reveal">
+    <div class="conf-item">
+      <span class="conf-num">01</span>
+      <div class="conf-title">Break of Structure</div>
+      <div class="conf-desc">MTF or HTF BOS confirms directional intent and continuation of buyer or seller control.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">02</span>
+      <div class="conf-title">Breaker Blocks</div>
+      <div class="conf-desc">Aligned across main TFs (4H, 6H, 8H, 12H+) confirming institutional algorithmic reaction levels.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">03</span>
+      <div class="conf-title">Fibonacci Levels</div>
+      <div class="conf-desc">0.618, 0.705, 0.786, and 0.5 equilibrium levels confirm algorithmic discount or premium of previous swing.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">04</span>
+      <div class="conf-title">Premium / Discount</div>
+      <div class="conf-desc">Only trade from optimal side of the range curve. Never from mid-range. Position matters above all.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">05</span>
+      <div class="conf-title">Volume Profile / OFA</div>
+      <div class="conf-desc">Confirms fair pricing and identifies high or low volume reaction nodes for precision targeting.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">06</span>
+      <div class="conf-title">Order Blocks / S&D</div>
+      <div class="conf-desc">HTF Supply and Demand zones likely to cause reversal or continuation. Used as structural support/resistance.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">07</span>
+      <div class="conf-title">Liquidity Sweep</div>
+      <div class="conf-desc">Smart money manipulation confirmed. Last liquidity of range taken, providing the fuel for the directional move.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">08</span>
+      <div class="conf-title">LTF / MTF Entry</div>
+      <div class="conf-desc">Precise entry confirmation on lower timeframes. Sniper timing with clear, logical invalidation point.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">09</span>
+      <div class="conf-title">Relative Strength</div>
+      <div class="conf-desc">DXY and majors confluence confirms macro alignment. Avoids fighting stronger pairs or divergent indices.</div>
+    </div>
+    <div class="conf-item">
+      <span class="conf-num">10</span>
+      <div class="conf-title">SL & TP Mapping</div>
+      <div class="conf-desc">Logical stop below or above liquidity with pre-mapped targets. Asymmetric risk-to-reward is non-negotiable.</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- RISK SECTION -->
+<section id="risk">
+  <div class="section-label">CAPITAL PRESERVATION</div>
+  <h2 class="section-title reveal">Risk as a<br>Living System</h2>
+  <p class="section-desc reveal">Risk management is not a checklist. It is a mindset that compounds over time. Longevity in the market is the primary competitive advantage.</p>
+
+  <div class="risk-layout reveal">
+    <div class="risk-pillar">
+      <div class="risk-icon risk-icon-green">🛡️</div>
+      <div class="risk-title">Play Small, Think Big</div>
+      <div class="risk-body">
+        Account size does not change how strict risk management must be. The habits formed on a small account are the same habits that protect seven-figure capital. Trade today as if you were already handling six figures.
+      </div>
+      <div class="risk-quote">"If you can't protect $1,000, you can't protect $1,000,000." — Master</div>
+    </div>
+    <div class="risk-pillar">
+      <div class="risk-icon risk-icon-red">✂️</div>
+      <div class="risk-title">Cut Early, Recover Fast</div>
+      <div class="risk-body">
+        Losses expand geometrically. A 50% drawdown requires a 100% gain just to break even. If a level breaks, cut the position. Do not justify, rationalize, or "believe in" a losing trade. Hope is not a strategy.
+      </div>
+      <div class="risk-quote">"Hope isn't a strategy. It's a slow death." — Master</div>
+    </div>
+    <div class="risk-pillar">
+      <div class="risk-icon risk-icon-blue">📈</div>
+      <div class="risk-title">Trail Intelligently</div>
+      <div class="risk-body">
+        Once in profit, trail stops below or above tier-one liquidity levels and structural confluences. Not too tight to get shaken out, but tight enough to protect what was earned. Profit locked is profit real.
+      </div>
+      <div class="risk-quote">"Better to leave profit on the table than hope for it to come back." — Master</div>
+    </div>
+    <div class="risk-pillar">
+      <div class="risk-icon risk-icon-gold">📔</div>
+      <div class="risk-title">Journal. Analyze. Evolve.</div>
+      <div class="risk-body">
+        Every mistake logged and studied becomes a tool for consistency. Data reveals what emotion hides. Feedback loops built on journaling are the true edge separator between professionals and retail.
+      </div>
+      <div class="risk-quote">"Data is the mirror that shows you what emotion hides." — Master</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- INVALIDATION SECTION -->
+<section id="invalidation">
+  <div class="section-label">NO-TRADE RULES</div>
+  <h2 class="section-title reveal">10 Reasons to<br>Stay Out</h2>
+  <p class="section-desc reveal">Knowing when not to trade is as valuable as knowing when to enter. These rules are hard stops. No exceptions, no negotiations.</p>
+
+  <div class="invalidation-grid reveal">
+    <div class="inv-item">
+      <div class="inv-badge">RULE 01</div>
+      <div class="inv-content">
+        <div class="inv-title">No HTF Narrative</div>
+        <div class="inv-desc">If liquidity, BOS, or directional bias is not clear on HTF, the setup is invalid. No HTF story equals no entry.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 02</div>
+      <div class="inv-content">
+        <div class="inv-title">Wrong Location</div>
+        <div class="inv-desc">If price is not at Premium/Discount, SD zone, POI, or clear range extreme — skip immediately.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 03</div>
+      <div class="inv-content">
+        <div class="inv-title">Red-Folder News</div>
+        <div class="inv-desc">FOMC, CPI, NFP, Fed speeches, Rate Decisions within ±30 minutes means no entry and close all open positions.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 04</div>
+      <div class="inv-content">
+        <div class="inv-title">Session Open Volatility</div>
+        <div class="inv-desc">No new trades in the first 5 to 15 minutes of NY or London open. Wait for direction after the volatility sweep.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 05</div>
+      <div class="inv-content">
+        <div class="inv-title">Bad Mental State</div>
+        <div class="inv-desc">If tired, tilted, greedy, fearful, impatient, or revenge-minded — trading is forbidden. Full stop.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 06</div>
+      <div class="inv-content">
+        <div class="inv-title">No Valid Invalidation</div>
+        <div class="inv-desc">If a logical structure-based stop loss cannot be clearly defined, the setup is not valid. No SL, no trade.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 07</div>
+      <div class="inv-content">
+        <div class="inv-title">Overtrading Impulse</div>
+        <div class="inv-desc">Daily limit reached or urge to increase size means stop immediately. More trades means more exposure, not more edge.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 08</div>
+      <div class="inv-content">
+        <div class="inv-title">Choppy / No Displacement</div>
+        <div class="inv-desc">No momentum, low volume, or unclear trend means avoid chop entirely and wait for clear displacement.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 09</div>
+      <div class="inv-content">
+        <div class="inv-title">Confluence Conflict</div>
+        <div class="inv-desc">If DXY, majors, or relative strength contradict the trade direction, conditions are misaligned.</div>
+      </div>
+    </div>
+    <div class="inv-item">
+      <div class="inv-badge">RULE 10</div>
+      <div class="inv-content">
+        <div class="inv-title">Not My Model</div>
+        <div class="inv-desc">If the setup does not fit the system time window, entry model, or A+ criteria — it is not this system's trade.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- PHILOSOPHY SECTION -->
+<section id="philosophy">
+  <div class="section-label">CORE PHILOSOPHY</div>
+  <h2 class="section-title reveal">Principles That<br>Run the System</h2>
+  <p class="section-desc reveal">Beyond technicals, beyond setups. The mental architecture that separates consistent performers from the crowd.</p>
+
+  <div class="philosophy-wall">
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_01</span>
+      <div class="phil-quote">"The winner isn't the one who risks the most. It's the one who lasts the longest."</div>
+      <div class="phil-attr">— MASTER // LONGEVITY DOCTRINE</div>
+    </div>
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_02</span>
+      <div class="phil-quote">"You don't grow by risking more. You grow by risking smarter."</div>
+      <div class="phil-attr">— MASTER // RISK DOCTRINE</div>
+    </div>
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_03</span>
+      <div class="phil-quote">"Knowledge compounds faster when pain is affordable."</div>
+      <div class="phil-attr">— MASTER // LEARNING DOCTRINE</div>
+    </div>
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_04</span>
+      <div class="phil-quote">"The undisciplined trader isn't punished by the market. He is punished by himself."</div>
+      <div class="phil-attr">— MASTER // DISCIPLINE DOCTRINE</div>
+    </div>
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_05</span>
+      <div class="phil-quote">"You can't control the market. You can only control how much it takes from you when you're wrong."</div>
+      <div class="phil-attr">— MASTER // CONTROL DOCTRINE</div>
+    </div>
+    <div class="phil-card reveal">
+      <span class="phil-glyph">PHILOSOPHY_06</span>
+      <div class="phil-quote">"The beauty of trading is that you can always play again. If you still have chips on the table."</div>
+      <div class="phil-attr">— MASTER // SURVIVAL DOCTRINE</div>
+    </div>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<!-- EXECUTION SECTION -->
+<section>
+  <div class="section-label">EXECUTION RULES</div>
+  <h2 class="section-title reveal">Rules That Print</h2>
+  <p class="section-desc reveal">The execution layer that makes the strategy real. Every entry and exit follows these mechanical rules without exception.</p>
+
+  <div class="reveal">
+    <table class="exec-table">
+      <thead>
+        <tr>
+          <th>RULE</th>
+          <th>PRINCIPLE</th>
+          <th>TAGS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bidirectional Profitability</td>
+          <td>Must be able to extract P&L in both uptrends and downtrends. Mastering shorting is non-negotiable. Tops are hard for everyone — without a short game, gains evaporate at cycle rollovers.</td>
+          <td><span class="tag">HEDGE</span><span class="tag">SHORTING</span></td>
+        </tr>
+        <tr>
+          <td>Pre-Defined Take Profits</td>
+          <td>Minimum 2 take profit levels mapped on HTF plays before entry. Trail the stop as price moves. Kill the "just a little more" voice — it destroys discipline and compounds losses.</td>
+          <td><span class="tag">TP</span><span class="tag-gold tag">TRAILING</span></td>
+        </tr>
+        <tr>
+          <td>Trade Less, Earn More</td>
+          <td>More trades equals more exposure, not more edge. Skill ceiling is refining entries to elite risk-to-reward so a few winners pay for the entire month. Selectivity is the strategy.</td>
+          <td><span class="tag">SELECTIVITY</span><span class="tag">EDGE</span></td>
+        </tr>
+        <tr>
+          <td>Indicators Are Secondary</td>
+          <td>Indicators lag. Use them only to read retail sentiment, never to trigger trades. MACD applies only at very high timeframes as secondary confluence. Eyes stay on BVOL24H for context.</td>
+          <td><span class="tag-red tag">ANTI-RETAIL</span><span class="tag">CONTEXT</span></td>
+        </tr>
+        <tr>
+          <td>Bodies Confirm, Wicks Trap</td>
+          <td>Retail sees support and resistance. Market makers see liquidity just below and above. Wicks mean stop runs. Candle bodies confirm direction, especially on HTF. Trade probabilities, not patterns.</td>
+          <td><span class="tag">LIQUIDITY</span><span class="tag">STRUCTURE</span></td>
+        </tr>
+        <tr>
+          <td>Monthly Target Cadence</td>
+          <td>Profits accumulate gradually. Monthly, 6-month, and 12-month targets define the compounding framework. One bad day is irrelevant inside a well-run month. Let the system define outcomes.</td>
+          <td><span class="tag-gold tag">COMPOUNDING</span><span class="tag">TARGETS</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">LUDGERO TEIXEIRA // <span>TRADING PLAYBOOK</span> // CONFIDENTIAL</div>
+  <div class="footer-right">MULTI-ASSET // SMART MONEY // HTF-FIRST</div>
+</footer>
+
+<script>
+  // Scroll progress bar
+  window.addEventListener('scroll', () => {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = (scrollTop / docHeight) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Stagger children of grids
+  document.querySelectorAll('.confluence-grid .conf-item, .philosophy-wall .phil-card').forEach((item, i) => {
+    item.style.transitionDelay = (i * 0.05) + 's';
+    item.classList.add('reveal');
+    observer.observe(item);
+  });
+</script>
+</body>
+</html>
